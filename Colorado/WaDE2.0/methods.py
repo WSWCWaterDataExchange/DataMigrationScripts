@@ -24,8 +24,8 @@ MethodsCSV="methods.csv"
 # df = pd.DataFrame.from_records(top100)
 
 ##OR read csv
-df = pd.read_csv(fileInput)
-df100 = df.head(100)
+df100 = pd.read_csv(fileInput)
+#df100 = df.head(100)
 
 #WaDE columns
 columns=['MethodUUID', 'MethodName', 'MethodDescription', 'MethodNEMILink', 'ApplicableResourceTypeCV',
@@ -34,7 +34,14 @@ dtypesx = ['BigInt	NVarChar(250)	NVarChar(50)	Text	NVarChar(100)	NVarChar(100)	N
            'NVarChar(100)	NVarChar(50)	NVarChar(50)']
 #assumes dtypes inferred from CO file
 
-inpVals = ['DiversionTracking', 'Methodology used for tracking diversions in the state of Colorado',
+"""
+#9.10.19 add UUID for dim tables
+#OrgID and the method name
+for ix in range(len(outdf100.index)):
+    outdf100.loc[ix, 'MethodUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'MethodName'])])
+"""
+print("Columns...")
+inpVals = ['CODWR_DiversionTracking','DiversionTracking', 'Methodology used for tracking diversions in the state of Colorado',
            np.nan, 'Allocation', 'Water withdrawals', np.nan, np.nan, np.nan]
 outdf100 = pd.DataFrame([inpVals], columns=columns)
 """
@@ -50,13 +57,8 @@ outdf100.MethodTypeCV = 'Water withdrawals'
 #outdf100.DataConfidenceValue
 """
 
-#9.10.19 add UUID for dim tables
-# no-loop approach?
-#OrgID and the method name
-for ix in range(len(outdf100.index)):
-    outdf100.loc[ix, 'MethodUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'MethodName'])])
-
-    #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
+print("Check required is not null...")
+#9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
 requiredCols=['MethodUUID', 'MethodName', 'MethodDescription','ApplicableResourceTypeCV','MethodTypeCV']
 #replace blank strings by NaN, if there are any
 outdf100 = outdf100.replace('', np.nan)
@@ -70,6 +72,7 @@ if(len(outdf100_nullMand.index) > 0):
     outdf100_nullMand.to_csv('methods_mandatoryFieldMissing.csv')  # index=False,
 #ToDO: purge these cells if there is any missing? #For now left to be inspected
 
+print("Write out...")
 #write out
 outdf100.to_csv(MethodsCSV, index=False)
 

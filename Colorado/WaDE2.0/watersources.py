@@ -9,10 +9,9 @@ os.chdir(workingDir)
 
 fileInput="DWR_Water_Right_-_Net_Amounts.csv"
 allocCSV="waterallocations.csv"
-siteCSV="sites.csv"
+
 WSdimCSV="watersources.csv"
-MethodsCSV="methods.csv"
-varCSV="variables.csv"
+
 
 ##from https://dev.socrata.com/foundry/data.colorado.gov/a8zw-bjth
 # client = Socrata("data.colorado.gov", None)
@@ -26,8 +25,8 @@ varCSV="variables.csv"
 # df = pd.DataFrame.from_records(top100)
 
 ##OR read csv
-df = pd.read_csv(fileInput)
-df100 = df.head(100)
+df100 = pd.read_csv(fileInput)
+#df100 = df.head(100)
 
 columns=['WaterSourceUUID', 'WaterSourceNativeID',	'WaterSourceName', 'WaterSourceTypeCV',
          'WaterQualityIndicatorCV',	'GNISFeatureNameCV', 'Geometry']
@@ -38,7 +37,9 @@ dtypesx = ['BigInt	NVarChar(250)	NVarChar(250)	NVarChar(250)	NVarChar(100)	NVarC
 #assumes dtypes inferred from CO file
 outdf100=pd.DataFrame(columns=columns)
 #
+print("Copying first two cols...")
 #existing corresponding fields
+#9.12.19 Adel: For water sources table, how about we do an incremental ID? like 1, 2, 3 etc?
 destCols=['WaterSourceNativeID', 'WaterSourceName']
 sourCols=['WDID', 'Water Source']
 outdf100[destCols] = df100[sourCols]
@@ -46,10 +47,12 @@ outdf100[destCols] = df100[sourCols]
 outdf100.WaterSourceNativeID = df100.WDID   #TODO check this
 outdf100.WaterSourceName = df100['Water Source']
 """
+print("dropping duplicates...")
 #filter the whole table based on a unique combination of site ID, SiteName
 outdf100 = outdf100.drop_duplicates(subset=['WaterSourceNativeID', 'WaterSourceName'])   #
 outdf100 = outdf100.reset_index(drop=True)
 #hardcode
+print("Hard coded values...")
 outdf100.WaterSourceTypeCV = 'Unknown'
 outdf100.WaterQualityIndicatorCV = 'Unknown'
 #outdf100.GNISFeatureNameCV
@@ -58,9 +61,11 @@ outdf100.WaterQualityIndicatorCV = 'Unknown'
 #9.10.19 add UUID for dim tables
 # no-loop approach?
 #native source identifer and the organization univeral id
+print("Adding UUID...")
 for ix in range(len(outdf100.index)):
     outdf100.loc[ix, 'WaterSourceUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'WaterSourceNativeID'])])
 
+print("Checking required is not null...")
 #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
 #'WaterSourceNativeID',
 requiredCols=['WaterSourceUUID', 'WaterSourceTypeCV', 'WaterQualityIndicatorCV']

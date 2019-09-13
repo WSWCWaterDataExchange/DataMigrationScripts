@@ -24,16 +24,23 @@ varCSV="variables.csv"
 # df = pd.DataFrame.from_records(top100)
 
 ##OR read csv
-df = pd.read_csv(fileInput)
-df100 = df.head(100)
+df100 = pd.read_csv(fileInput)
+#df100 = df.head(100)
 
+print("Columns...")
 #WaDE columns
 columns=['VariableSpecificUUID', 'VariableSpecificCV', 'VariableCV', 'AggregationStatisticCV', 'AggregationInterval', 'AggregationIntervalUnitCV',
          'ReportYearStartMonth', 'ReportYearTypeCV', 'AmountUnitCV', 'MaximumAmountUnitCV']
 dtypesx = ['']
 #assumes dtypes inferred from CO file
 
-inpVals = ['Allocation All', 'Allocation', 'Average', '1', 'Day', '11', 'Irrigation', 'CFS', 'AFY']
+"""
+#9.10.19 add UUID for dim tables
+#OrgID and the varspec cv
+for ix in range(len(outdf100.index)):
+    outdf100.loc[ix, 'VariableSpecificUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'VariableSpecificCV'])])
+"""
+inpVals = ['CODWR Allocation All','Allocation All', 'Allocation', 'Average', '1', 'Day', '11', 'Irrigation', 'CFS', 'AFY']
 outdf100 = pd.DataFrame([inpVals], columns=columns)
 """
 outdf100=pd.DataFrame(columns=columns)
@@ -49,12 +56,7 @@ outdf100.AmountUnitCV = 'CFS'
 outdf100.MaximumAmountUnitCV = 'AFY'
 """
 
-#9.10.19 add UUID for dim tables
-# no-loop approach?
-#OrgID and the varspec cv
-for ix in range(len(outdf100.index)):
-    outdf100.loc[ix, 'VariableSpecificUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'VariableSpecificCV'])])
-
+print("Check required is not null...")
 #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
 requiredCols=['VariableSpecificUUID','VariableSpecificCV', 'VariableCV', 'AggregationStatisticCV', 'AggregationInterval',
               'AggregationIntervalUnitCV', 'ReportYearStartMonth', 'ReportYearTypeCV', 'AmountUnitCV']
@@ -72,6 +74,7 @@ if(len(outdf100_nullMand.index) > 0):
     outdf100_nullMand.to_csv('variables_mandatoryFieldMissing.csv')  # index=False,
 #ToDO: purge these cells if there is any missing? #For now left to be inspected
 
+print("Write out...")
 # save to output
 outdf100.to_csv(varCSV, index=False)
 

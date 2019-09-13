@@ -34,8 +34,8 @@ varCSV="variables.csv"
 # df = pd.DataFrame.from_records(top100)
 
 ##OR read csv
-df = pd.read_csv(fileInput)
-df100 = df.head(100)
+df100 = pd.read_csv(fileInput)
+#df100 = df.head(100)
 
 #WaDE columns
 columns=['SiteUUID', 'SiteNativeID', 'SiteName', 'USGSSiteID', 'SiteTypeCV', 'Longitude_x', 'Latitude_y',
@@ -64,14 +64,17 @@ outdf100.CoordinateMethodCV = df100['Location Accuracy']
 outdf100.GNISCodeCV = df100['GNIS ID']
 outdf100.EPSGCodeCV = 'EPSG:4326'
 """
+print("Copy columns...")
 destCols=['SiteNativeID', 'SiteName', 'SiteTypeCV', 'Longitude_x', 'Latitude_y', 'CoordinateMethodCV', 'GNISCodeCV']
 sourCols=['WDID', 'Structure Name', 'Structure Type', 'Longitude', 'Latitude','Location Accuracy', 'GNIS ID']
 outdf100[destCols] = df100[sourCols]
 
+print("Dropping duplicates...")
 #filter the whole table based on a unique combination of site ID, SiteName, SiteType
 outdf100 = outdf100.drop_duplicates(subset=['SiteNativeID', 'SiteName', 'SiteTypeCV'])   #
 outdf100 = outdf100.reset_index(drop=True)
 
+print("Dropping empty lat/lon...")
 #drop the sites with no long and lat.
 outdf100 = outdf100.replace('', np.nan) #replace blank strings by NaN
 outdf100purge = outdf100.loc[(outdf100['Longitude_x'].isnull()) | (outdf100['Latitude_y'].isnull())]
@@ -81,17 +84,20 @@ if(len(outdf100purge.index) > 0):
     outdf100 = outdf100.drop(dropIndex)
     outdf100 = outdf100.reset_index(drop=True)
 
+print("Hard code...")
 #hard code "Unknown" for SiteTypeCV value if it is missing
 #outdf100 = outdf100.replace('', np.nan) #replace blank strings by NaN
 outdf100.loc[outdf100['SiteTypeCV'].isnull(),'SiteTypeCV']='Unknown'
 #hardcoded
 outdf100.EPSGCodeCV = 'EPSG:4326'
 
+print("Adding UUID...")
 #9.10.19 add UUID for dim tables
 # no-loop approach?
 for ix in range(len(outdf100.index)):
     outdf100.loc[ix, 'SiteUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'SiteNativeID'])])
 
+print("Checking required isnot null...")
 #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
 #'SiteNativeID',
 requiredCols=['SiteUUID', 'SiteName', 'CoordinateMethodCV', 'EPSGCodeCV']
@@ -108,6 +114,7 @@ if(len(outdf100_nullMand.index) > 0):
     outdf100_nullMand.to_csv('sites_mandatoryFieldMissing.csv')  # index=False,
 #ToDO: purge these cells if there is any missing? #For now left to be inspected
 
+print("Writing out...")
 #write out
 outdf100.to_csv(siteCSV, index=False)
 
