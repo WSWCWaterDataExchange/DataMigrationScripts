@@ -38,7 +38,7 @@ dtypesx = ['']
 #9.10.19 add UUID for dim tables
 #OrgID and the varspec cv
 for ix in range(len(outdf100.index)):
-    outdf100.loc[ix, 'VariableSpecificUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'VariableSpecificCV'])])
+    outdf100.loc[ix, 'VariableSpecificUUID'] = " ".join(["CODWR",str(outdf100.loc[ix, 'VariableSpecificCV'])])
 """
 inpVals = ['CODWR Allocation All','Allocation All', 'Allocation', 'Average', '1', 'Day', '11', 'Irrigation', 'CFS', 'AFY']
 outdf100 = pd.DataFrame([inpVals], columns=columns)

@@ -12,7 +12,7 @@ Comments from Adel
 3) hard code "Unknown" for SiteTypeCV value if it is missing
 """
 
-workingDir="C:/Tseganeh/0WaDE/Data/TestOutputs"
+workingDir="C:/tseg/testData/full/"
 os.chdir(workingDir)
 
 fileInput="DWR_Water_Right_-_Net_Amounts.csv"
@@ -35,7 +35,7 @@ varCSV="variables.csv"
 
 ##OR read csv
 df100 = pd.read_csv(fileInput)
-#df100 = df.head(100)
+#df100 = df.head(10000)
 
 #WaDE columns
 columns=['SiteUUID', 'SiteNativeID', 'SiteName', 'USGSSiteID', 'SiteTypeCV', 'Longitude_x', 'Latitude_y',
@@ -78,7 +78,7 @@ print("Dropping empty lat/lon...")
 #drop the sites with no long and lat.
 outdf100 = outdf100.replace('', np.nan) #replace blank strings by NaN
 outdf100purge = outdf100.loc[(outdf100['Longitude_x'].isnull()) | (outdf100['Latitude_y'].isnull())]
-if(len(outdf100purge.index) > 0):
+if len(outdf100purge.index) > 0:
     outdf100purge.to_csv('sites_missing.csv')    #index=False,
     dropIndex = outdf100.loc[(outdf100['Longitude_x'].isnull()) | (outdf100['Latitude_y'].isnull())].index
     outdf100 = outdf100.drop(dropIndex)

@@ -5,7 +5,7 @@ from sodapy import Socrata
 import os
 import beneficialUseDictionary
 
-workingDir="C:/Tseganeh/0WaDE/Data/TestOutputs/"
+workingDir = "C:/tseg/testData/full/"
 os.chdir(workingDir)
 
 fileInput="DWR_Water_Right_-_Net_Amounts.csv"
@@ -28,10 +28,12 @@ varCSV="Variables.csv"
 
 ##OR read csv
 df100 = pd.read_csv(fileInput)
-#df100 = df.head(100)
+#df100 = df.head(10000)
 
 #WaDE columns #'WaDESiteUUID'  # to be assigned by Wade
-columns=["OrganizationUID","SiteID","VariableSpecificUID","WaterSourceID","MethodID","BeneficialUseID",
+#UUIDs: 9.15.19: Adel commented "Add UUIDs for all dim tables"
+# OrganizationUUID, SiteUUID, VariableSpecificUUID, WaterSourceUUID, MethodUUID
+columns=["OrganizationUUID","SiteUUID","VariableSpecificUUID","WaterSourceUUID","MethodUUID","BeneficialUseID",
          "NativeAllocationID","WaterAllocationTypeCV","AllocationOwner","AllocationApplicationDate",
          "AllocationPriorityDate","AllocationLegalStatusCV","AllocationCropDutyAmount","AllocationExpirationDate",
          "AllocationChangeApplicationIndicator","LegacyAllocationIDs","AllocationBasisCV","AllocationAcreage",
@@ -43,14 +45,14 @@ outdf100=pd.DataFrame(columns=columns)
 
 df100 = df100.replace('', np.nan)
 
-print("Adding SiteIDvar...")
+print("Adding SiteUUIDvar...")
 #ToDO: append 'CODWR'
-#outdf100.SiteIDVar = df100.WDID
-df100 = df100.assign(SiteIDVar=np.nan)  #add new column and make is nan
+#outdf100.SiteUUIDVar = df100.WDID
+df100 = df100.assign(SiteUUIDVar=np.nan)  #add new column and make is nan
 # no-loop approach?
 for ix in range(len(df100.index)):
-    df100.loc[ix, 'SiteIDVar'] = "_".join(["CODWR",str(df100.loc[ix, 'WDID'])])
-#outdf100.SiteID = df100['SiteIDVar']
+    df100.loc[ix, 'SiteUUIDVar'] = "_".join(["CODWR",str(df100.loc[ix, 'WDID'])])
+#outdf100.SiteUUID = df100['SiteUUIDVar']
 
 print("Beneficial uses...")
 #ToDO: look up beneficial use
@@ -73,14 +75,14 @@ for ix in range(len(df100.index)):
 print("Water sources...")
 #ToDO: look up WaterSources_dim
 wsdim = pd.read_csv(WSdimCSV)
-#df100['WaterSourceID'] = np.nan
-df100 = df100.assign(WaterSourceID=np.nan)
+#df100['WaterSourceUUID'] = np.nan
+df100 = df100.assign(WaterSourceUUID=np.nan)
 for ix in range(len(df100.index)):
      print(ix)
-     ml = wsdim.loc[wsdim['WaterSourceName'] == df100.loc[ix,"Water Source"], 'WaterSourceNativeID']
+     ml = wsdim.loc[wsdim['WaterSourceName'] == df100.loc[ix,"Water Source"], 'WaterSourceUUID']
      #ml = wsdim.loc[wsdim['WaterSourceName'] == outdf100.WaterSourceVar[ix],'WaterSourceNativeID']
-     df100.loc[ix, 'WaterSourceID'] = ml.iloc[0]
-#outdf100.WaterSourceID = df100['WaterSourceID']
+     df100.loc[ix, 'WaterSourceUUID'] = ml.iloc[0]
+#outdf100.WaterSourceUUID = df100['WaterSourceUUID']
 
 print("Native allocation...")
 #ToDO check logic
@@ -168,8 +170,8 @@ for ix in range(len(df100.index)):
 #outdf100.AllocationMaximum = df100.AllocationMaximum
 #direct copy
 """
-outdf100.SiteID = df100['SiteIDVar']
-outdf100.WaterSourceID = df100['WaterSourceID']
+outdf100.SiteUUID = df100['SiteUUIDVar']
+outdf100.WaterSourceUUID = df100['WaterSourceUUID']
 outdf100.BeneficialUseID = df100['BeneficialUseID']
 outdf100.NativeAllocationID = df100.NativeAllocationID
 outdf100.AllocationOwner =	df100['Structure Name']
@@ -180,17 +182,17 @@ outdf100.AllocationAmount = df100.AllocationAmount
 outdf100.AllocationMaximum = df100.AllocationMaximum
 """
 print("Copying all columns...")
-destCols=["SiteID","WaterSourceID","BeneficialUseID","NativeAllocationID","AllocationOwner","AllocationApplicationDate",
+destCols=["SiteUUID","WaterSourceUUID","BeneficialUseID","NativeAllocationID","AllocationOwner","AllocationApplicationDate",
              "AllocationPriorityDate","AllocationLegalStatusCV","AllocationAmount","AllocationMaximum"]
-sourCols=["SiteIDVar","WaterSourceID","BeneficialUseID","NativeAllocationID","Structure Name","Appropriation Date",
+sourCols=["SiteUUIDVar","WaterSourceUUID","BeneficialUseID","NativeAllocationID","Structure Name","Appropriation Date",
              "Appropriation Date","AllocationLegalStatusCV","AllocationAmount","AllocationMaximum"]
 outdf100[destCols] = df100[sourCols]
 
 #hard coded
 print("Hard coded...")
-outdf100.OrganizationUID = "CODWR"
-outdf100.VariableSpecificUID = "Water Allocation_all"
-outdf100.MethodID = "CODWR-DiversionTracking"
+outdf100.OrganizationUUID = "CODWR"
+outdf100.VariableSpecificUUID = "CODWR Allocation All"
+outdf100.MethodUUID = "CODWR-DiversionTracking"
 outdf100.AllocationBasisCV = "Unknown"
 outdf100.TimeframeStart = "01/01"
 outdf100.TimeframeEnd = "12/31"
@@ -204,7 +206,7 @@ Comment from Adel
 print("Droping null allocations...")
 #outdf100 = outdf100.replace('', np.nan) #replace blank strings by NaN
 outdf100purge = outdf100.loc[(outdf100["AllocationAmount"].isnull()) & (outdf100["AllocationMaximum"].isnull())]
-if(len(outdf100purge.index) > 0):
+if len(outdf100purge.index) > 0:
     outdf100purge.to_csv('waterallocations_missing.csv')    #index=False,
     dropIndex = outdf100.loc[(outdf100["AllocationAmount"].isnull()) & (outdf100["AllocationMaximum"].isnull())].index
     outdf100 = outdf100.drop(dropIndex)
@@ -213,8 +215,8 @@ if(len(outdf100purge.index) > 0):
 print("Droping duplicates...")
 #drop duplicate rows; just make sure
 outdf100Duplicated=outdf100.loc[outdf100.duplicated()]
-if(len(outdf100Duplicated.index) > 0):
-    outdf100Duplicated.to_csv('waterallocations_duplicaterows.csv')  # index=False,
+if len(outdf100Duplicated.index) > 0:
+    outdf100Duplicated.to_csv("waterallocations_duplicaterows.csv")  # index=False,
     outdf100.drop_duplicates(inplace=True)   #
     outdf100 = outdf100.reset_index(drop=True)
 #remove duplicate index
@@ -222,15 +224,15 @@ if(len(outdf100Duplicated.index) > 0):
 
 print("Checking required is not null...")
 #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
-#"SiteID",
-requiredCols=["OrganizationUID","VariableSpecificUID","WaterSourceID","MethodID", "AllocationPriorityDate"]
+#"SiteUUID",
+requiredCols=["OrganizationUUID","VariableSpecificUUID","WaterSourceUUID","MethodUUID", "AllocationPriorityDate"]
 outdf100 = outdf100.replace('', np.nan) #replace blank strings by NaN, if there are any
 #any cell of these columns is null
 #outdf100_nullMand = outdf100.loc[outdf100.isnull().any(axis=1)] --for all cols
-#(outdf100["SiteID"].isnull()) |
-outdf100_nullMand = outdf100.loc[(outdf100["OrganizationUID"].isnull()) |
-                                (outdf100["VariableSpecificUID"].isnull()) | (outdf100["WaterSourceID"].isnull()) |
-                                (outdf100["MethodID"].isnull()) | (outdf100["AllocationPriorityDate"].isnull())]
+#(outdf100["SiteUUID"].isnull()) |
+outdf100_nullMand = outdf100.loc[(outdf100["OrganizationUUID"].isnull()) |
+                                (outdf100["VariableSpecificUUID"].isnull()) | (outdf100["WaterSourceUUID"].isnull()) |
+                                (outdf100["MethodUUID"].isnull()) | (outdf100["AllocationPriorityDate"].isnull())]
 #outdf100_nullMand = outdf100.loc[[False | (outdf100[varName].isnull()) for varName in requiredCols]]
 if(len(outdf100_nullMand.index) > 0):
     outdf100_nullMand.to_csv('waterallocations_mandatoryFieldMissing.csv')  # index=False,

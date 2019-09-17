@@ -4,7 +4,7 @@ import numpy as np
 from sodapy import Socrata
 import os
 
-workingDir="C:/Tseganeh/0WaDE/Data/TestOutputs"
+workingDir = "C:/tseg/testData/full"
 os.chdir(workingDir)
 
 fileInput="DWR_Water_Right_-_Net_Amounts.csv"
@@ -26,7 +26,7 @@ WSdimCSV="watersources.csv"
 
 ##OR read csv
 df100 = pd.read_csv(fileInput)
-#df100 = df.head(100)
+#df100 = df.head(10000)
 
 columns=['WaterSourceUUID', 'WaterSourceNativeID',	'WaterSourceName', 'WaterSourceTypeCV',
          'WaterQualityIndicatorCV',	'GNISFeatureNameCV', 'Geometry']
@@ -40,8 +40,8 @@ outdf100=pd.DataFrame(columns=columns)
 print("Copying first two cols...")
 #existing corresponding fields
 #9.12.19 Adel: For water sources table, how about we do an incremental ID? like 1, 2, 3 etc?
-destCols=['WaterSourceNativeID', 'WaterSourceName']
-sourCols=['WDID', 'Water Source']
+destCols=['WaterSourceName'] #'WaterSourceNativeID',
+sourCols=['Water Source']    #'WDID',
 outdf100[destCols] = df100[sourCols]
 """
 outdf100.WaterSourceNativeID = df100.WDID   #TODO check this
@@ -49,8 +49,9 @@ outdf100.WaterSourceName = df100['Water Source']
 """
 print("dropping duplicates...")
 #filter the whole table based on a unique combination of site ID, SiteName
-outdf100 = outdf100.drop_duplicates(subset=['WaterSourceNativeID', 'WaterSourceName'])   #
+outdf100 = outdf100.drop_duplicates(subset=['WaterSourceName'])   #'WaterSourceNativeID',
 outdf100 = outdf100.reset_index(drop=True)
+outdf100['WaterSourceNativeID'] = range(1, len(outdf100.index) + 1)
 #hardcode
 print("Hard coded values...")
 outdf100.WaterSourceTypeCV = 'Unknown'
