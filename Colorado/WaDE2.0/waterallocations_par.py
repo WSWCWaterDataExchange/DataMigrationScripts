@@ -10,7 +10,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-workingDir = "C:/tseg/testData/fullPar/"
+workingDir = "C:/tseg/testData/fullPar2/"
 os.chdir(workingDir)
 
 fileInput = "DWR_Water_Right_-_Net_Amounts.csv"
@@ -23,11 +23,15 @@ varCSV = "Variables.csv"
 # WaDE columns #'WaDESiteUUID'  # to be assigned by Wade
 # UUIDs: 9.15.19: Adel commented "Add UUIDs for all dim tables"
 # OrganizationUUID, SiteUUID, VariableSpecificUUID, WaterSourceUUID, MethodUUID
-columns = ["OrganizationUUID", "SiteUUID", "VariableSpecificUUID", "WaterSourceUUID", "MethodUUID", "BeneficialUseID",
-           "NativeAllocationID", "WaterAllocationTypeCV", "AllocationOwner", "AllocationApplicationDate",
+columns = ["OrganizationUUID", "SiteUUID", "VariableSpecificUUID", "WaterSourceUUID", "MethodUUID", "PrimaryUseCategory",
+           "BeneficialUseCategory", "AllocationNativeID", "AllocationTypeCV", "AllocationOwner", "AllocationApplicationDate",
            "AllocationPriorityDate", "AllocationLegalStatusCV", "AllocationCropDutyAmount", "AllocationExpirationDate",
-           "AllocationChangeApplicationIndicator", "LegacyAllocationIDs", "AllocationBasisCV", "AllocationAcreage",
-           "TimeframeStart", "TimeframeEnd", "AllocationAmount", "AllocationMaximum"]
+           "AllocationChangeApplicationIndicator", "LegacyAllocationIDs", "AllocationBasisCV", "AllocationTimeframeStart",
+           "AllocationTimeframeEnd", "AllocationAmount", "AllocationMaximum", "PopulationServed", "PowerGeneratedGWh",
+           "IrrigatedAcreage", "AllocationCommunityWaterSupplySystem", "AllocationSDWISIdentifierCV",
+           "AllocationAssociatedWithdrawalSiteIDs", "AllocationAssociatedConsumptiveUseSiteIDs", "WaterAllocationNativeURL",
+           "CustomerTypeCV", "IrrigationMethodCV", "CropTypeCV", "CommunityWaterSupplySystem", "DataPublicationDate", "DataPublicationDOI"]
+
 dtypesx = ['']
 
 # TODO: assumes dtypes inferred from CO file
@@ -94,8 +98,8 @@ if rank == 0:
 # may need to modify capitalization in beneficialUseDictionary
 benUseDict = beneficialUseDictionary.beneficialUseDictionary
 # df100['BeneficialUseCategoryID'] = df100['Decreed Uses']
-# df100['BeneficialUseID'] = np.nan
-df100 = df100.assign(BeneficialUseID=np.nan)
+# df100['BeneficialUseCategory'] = np.nan
+df100 = df100.assign(BeneficialUseCategory=np.nan)
 #
 df100 = df100.dropna(subset=['Decreed Uses'])
 df100 = df100.reset_index(drop=True)
@@ -105,9 +109,9 @@ for ix in range(len(df100.index)):
         print(ix)
     benUseListStrStr = df100.loc[ix, 'Decreed Uses']
     benUseListStr = benUseListStrStr.strip()  # remove whitespace chars
-    df100.loc[ix, 'BeneficialUseID'] = ",".join(
+    df100.loc[ix, 'BeneficialUseCategory'] = ",".join(
         benUseDict[inx] for inx in list(str(benUseListStr)))  # map(lambda x: x, benUseListStr))
-# outdf100.BeneficialUseID = df100['BeneficialUseID']
+# outdf100.BeneficialUseCategory = df100['BeneficialUseCategory']
 
 if rank == 0:
     print("Water sources...")
@@ -125,17 +129,17 @@ if rank == 0:
     print("Native allocation...")
 # ToDO check logic
 # Concentrate the three values of these fields with a - between them (Admin No, Order No, Decreed Units)
-# df100['NativeAllocationID'] = np.nan
-df100 = df100.assign(NativeAllocationID=np.nan)
+# df100['AllocationNativeID'] = np.nan
+df100 = df100.assign(AllocationNativeID=np.nan)
 # no-loop approach?
 for ix in range(len(df100.index)):
     if rank == 0:
         print(ix)
-    df100.loc[ix, 'NativeAllocationID'] = "-".join(map(str, [df100["Admin No"].iloc[ix], df100["Order No"].iloc[ix],
+    df100.loc[ix, 'AllocationNativeID'] = "-".join(map(str, [df100["Admin No"].iloc[ix], df100["Order No"].iloc[ix],
                                                              df100["Decreed Units"].iloc[
                                                                  ix]]))  # map(lambda x: x, benUseListStr))
-outdf100.NativeAllocationID = df100.NativeAllocationID
-# outdf100.drop(columns='NativeAllocationIDVar', inplace=True)
+outdf100.AllocationNativeID = df100.AllocationNativeID
+# outdf100.drop(columns='AllocationNativeIDVar', inplace=True)
 
 if rank == 0:
     print("Net absolute / net conditional...")
@@ -221,10 +225,10 @@ for ix in range(len(df100.index)):
 # copy
 if rank == 0:
     print("Copying all columns...")
-destCols = ["SiteUUID", "WaterSourceUUID", "BeneficialUseID", "NativeAllocationID", "AllocationOwner",
+destCols = ["SiteUUID", "WaterSourceUUID", "BeneficialUseCategory", "AllocationNativeID", "AllocationOwner",
             "AllocationApplicationDate",
             "AllocationPriorityDate", "AllocationLegalStatusCV", "AllocationAmount", "AllocationMaximum"]
-sourCols = ["SiteUUIDVar", "WaterSourceUUID", "BeneficialUseID", "NativeAllocationID", "Structure Name",
+sourCols = ["SiteUUIDVar", "WaterSourceUUID", "BeneficialUseCategory", "AllocationNativeID", "Structure Name",
             "Appropriation Date",
             "Appropriation Date", "AllocationLegalStatusCV", "AllocationAmount", "AllocationMaximum"]
 outdf100[destCols] = df100[sourCols]
@@ -235,9 +239,12 @@ if rank == 0:
 outdf100.OrganizationUUID = "CODWR"
 outdf100.VariableSpecificUUID = "CODWR Allocation All"
 outdf100.MethodUUID = "CODWR-DiversionTracking"
+outdf100.PrimaryUseCategory = "Irrigation"
 outdf100.AllocationBasisCV = "Unknown"
-outdf100.TimeframeStart = "01/01"
-outdf100.TimeframeEnd = "12/31"
+outdf100.AllocationTimeframeStart = "01/01"
+outdf100.AllocationTimeframeEnd = "12/31"
+outdf100.DataPublicationDate = "4/24/2019"
+
 """ 
 Comment from Adel
 1) AllocationAmount/Allocation maximum empty cells -- one of them empty is acceptable but not both
