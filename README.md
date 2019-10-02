@@ -34,3 +34,6 @@ To run waterallocations_par.py:
 mpiexec -n num_procs python waterallocations_par.py
 
 where num_procs is the number of processes 
+
+# Sample files
+NewColoradoDataFiles.zip contains csv files prepared using these scripts. 
