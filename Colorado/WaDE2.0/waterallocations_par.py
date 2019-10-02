@@ -215,7 +215,7 @@ for ix in range(len(df100.index)):
     else:
         if ((df100["Decreed Units"].iloc[ix] == "A") and (df100["Net Absolute"].iloc[ix] != 0)):
             df100.loc[ix, 'AllocationMaximum'] = df100["Net Absolute"].iloc[ix]
-        elif ((df100["Decreed Units"].iloc[ix] == "C") and (df100["Net Conditional"].iloc[ix] != 0)):
+        elif ((df100["Decreed Units"].iloc[ix] == "A") and (df100["Net Conditional"].iloc[ix] != 0)):
             df100.loc[ix, 'AllocationMaximum'] = df100["Net Conditional"].iloc[ix]
         else:
             ## TODO: Check this is the case of units='C'
@@ -237,7 +237,7 @@ outdf100[destCols] = df100[sourCols]
 if rank == 0:
     print("Hard coded...")
 outdf100.OrganizationUUID = "CODWR"
-outdf100.VariableSpecificUUID = "CODWR Allocation All"
+outdf100.VariableSpecificUUID = "Allocation All"
 outdf100.MethodUUID = "CODWR-DiversionTracking"
 outdf100.PrimaryUseCategory = "Irrigation"
 outdf100.AllocationBasisCV = "Unknown"

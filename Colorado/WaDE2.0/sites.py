@@ -95,18 +95,18 @@ print("Adding UUID...")
 #9.10.19 add UUID for dim tables
 # no-loop approach?
 for ix in range(len(outdf100.index)):
-    outdf100.loc[ix, 'SiteUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'SiteNativeID'])])
+    outdf100.loc[ix, 'WaDESiteUUID'] = "_".join(["CODWR",str(outdf100.loc[ix, 'SiteNativeID'])])
 
 print("Checking required isnot null...")
 #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
 #'SiteNativeID',
-requiredCols=['SiteUUID', 'SiteName', 'CoordinateMethodCV', 'EPSGCodeCV']
+requiredCols=['WaDESiteUUID', 'SiteName', 'CoordinateMethodCV', 'EPSGCodeCV']
 #replace blank strings by NaN, if there are any
 outdf100 = outdf100.replace('', np.nan)
 #any cell of these columns is null
 #outdf100_nullMand = outdf100.loc[outdf100.isnull().any(axis=1)] --for all cols
 #(outdf100["SiteNativeID"].isnull()) |
-outdf100_nullMand = outdf100.loc[(outdf100["SiteUUID"].isnull()) |
+outdf100_nullMand = outdf100.loc[(outdf100["WaDESiteUUID"].isnull()) |
                                 (outdf100["SiteName"].isnull()) | (outdf100["CoordinateMethodCV"].isnull()) |
                                 (outdf100["EPSGCodeCV"].isnull())]
 #outdf100_nullMand = outdf100.loc[[False | (outdf100[varName].isnull()) for varName in requiredCols]]

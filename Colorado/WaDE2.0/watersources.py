@@ -55,7 +55,7 @@ outdf100['WaterSourceNativeID'] = range(1, len(outdf100.index) + 1)
 #hardcode
 print("Hard coded values...")
 outdf100.WaterSourceTypeCV = 'Unknown'
-outdf100.WaterQualityIndicatorCV = 'Unknown'
+outdf100.WaterQualityIndicatorCV = 'Unspecified'
 #outdf100.GNISFeatureNameCV
 #outdf100.Geometry
 
