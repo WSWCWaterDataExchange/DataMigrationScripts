@@ -10,9 +10,12 @@ and generate csv files for water allocations, site specific information, variabl
 This is used in waterallocations_par.py code to map 'decreed uses' in DWR_Water_Right_-_Net_Amounts.csv to corresponding beneficial use categories.
 
 # Dependencies (Required packages/libraries):
-pandas
+pandas 
+
 numpy
+
 mpi4py 
+
 MPI library (for mpi4py): For windows use Microsoft MPI from https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi
 
 # To run the codes
