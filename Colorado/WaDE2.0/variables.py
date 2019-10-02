@@ -29,8 +29,8 @@ df100 = pd.read_csv(fileInput)
 
 print("Columns...")
 #WaDE columns
-columns=['VariableSpecificUUID', 'VariableSpecificCV', 'VariableCV', 'AggregationStatisticCV', 'AggregationInterval', 'AggregationIntervalUnitCV',
-         'ReportYearStartMonth', 'ReportYearTypeCV', 'AmountUnitCV', 'MaximumAmountUnitCV']
+columns=['VariableSpecificUUID', 'VariableSpecificCV', 'VariableCV', 'AggregationStatisticCV', 'AggregationInterval',
+         'AggregationIntervalUnitCV', 'ReportYearStartMonth', 'ReportYearTypeCV', 'AmountUnitCV', 'MaximumAmountUnitCV']
 dtypesx = ['']
 #assumes dtypes inferred from CO file
 
