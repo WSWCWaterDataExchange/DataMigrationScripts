@@ -100,7 +100,7 @@ for ix in range(len(outdf100.index)):
 print("Checking required isnot null...")
 #9.9.19: Adel: check all 'required' (not NA) columns have value (not empty)
 #'SiteNativeID',
-requiredCols=['WaDESiteUUID', 'SiteName', 'CoordinateMethodCV', 'EPSGCodeCV']
+requiredCols=['WaDESiteUUID', 'SiteName', 'CoordinateMethodCV', 'GNISCodeCV', 'EPSGCodeCV']
 #replace blank strings by NaN, if there are any
 outdf100 = outdf100.replace('', np.nan)
 #any cell of these columns is null
@@ -108,7 +108,7 @@ outdf100 = outdf100.replace('', np.nan)
 #(outdf100["SiteNativeID"].isnull()) |
 outdf100_nullMand = outdf100.loc[(outdf100["WaDESiteUUID"].isnull()) |
                                 (outdf100["SiteName"].isnull()) | (outdf100["CoordinateMethodCV"].isnull()) |
-                                (outdf100["EPSGCodeCV"].isnull())]
+                                (outdf100["GNISCodeCV"].isnull())|(outdf100["EPSGCodeCV"].isnull())]
 #outdf100_nullMand = outdf100.loc[[False | (outdf100[varName].isnull()) for varName in requiredCols]]
 if(len(outdf100_nullMand.index) > 0):
     outdf100_nullMand.to_csv('sites_mandatoryFieldMissing.csv')  # index=False,
